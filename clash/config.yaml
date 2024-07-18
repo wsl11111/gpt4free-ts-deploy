@@ -1,0 +1,30 @@
+port: 7890  # Clash监听的本地端口，用于代理流量
+socks-port: 7891  # Clash的SOCKS5代理端口
+redir-port: 7892  # 端口转发的端口
+mixed-port: 7893  # HTTP/HTTPS/SOCKS5混合代理端口
+allow-lan: true   # 允许局域网内的设备访问Clash
+
+mode: Rule       # 工作模式，Rule表示基于规则的代理模式
+log-level: info  # 日志级别，info表示记录详细信息
+
+proxies:         # 代理服务器配置
+  - name: proxy1
+    type: ss     # 代理类型，如ss (Shadowsocks), vmess, trojan等
+    server: 127.0.0.1  # 代理服务器的IP地址或域名
+    port: 33210   # 代理服务器的端口
+    cipher: aes-256-cfb  # 加密算法和流密码模式
+    password: your-proxy-password  # 代理服务器的密码
+    udp: true    # 是否支持UDP转发
+
+proxy-groups:    # 代理组，用于策略和规则匹配
+  - name: PROXY  # 代理组的名字
+    type: select # 选择第一个可用的代理
+    proxies:     # 代理组中包含的代理
+      - proxy1   # 使用上面定义的proxy1
+      - DIRECT   # 直连，不使用代理
+      - REJECT   # 拒绝连接
+
+rules:           # 规则，用于决定流量如何被代理
+  - DOMAIN-SUFFIX,example.com,PROXY   # 匹配所有以example.com结尾的域名，使用PROXY组
+  - GEOIP,CN,DIRECT                  # 匹配中国IP地址，使用直连
+  - MATCH,REJECT                    # 默认拒绝所有连接，除非有其他规则匹配
